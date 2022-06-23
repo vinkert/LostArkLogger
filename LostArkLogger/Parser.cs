@@ -64,29 +64,26 @@ namespace LostArkLogger
                     try
                     {
                         pcap_strerror(1); // verify winpcap works at all
-                        gameInterface = NetworkUtil.GetAdapterUsedByProcess("LostArk");
                         foreach (var device in CaptureDeviceList.Instance)
                         {
                             if (device.MacAddress == null) continue; // SharpPcap.IPCapDevice.MacAddress is null in some cases
-                            if (gameInterface.GetPhysicalAddress().ToString() == device.MacAddress.ToString())
+							try
                             {
-                                try
-                                {
-                                    device.Open(DeviceModes.None, 1000); // todo: 1sec timeout ok?
-                                    device.Filter = filter;
-                                    device.OnPacketArrival += new PacketArrivalEventHandler(Device_OnPacketArrival_pcap);
-                                    device.StartCapture();
-                                    pcap = device;
-                                    foundAdapter = true;
-                                    break;
-                                }
-                                catch (Exception ex)
-                                {
-                                    var exceptionMessage = "Exception while trying to listen to NIC " + device.Name + "\n" + ex.ToString();
-                                    Console.WriteLine(exceptionMessage);
-                                    AppendLog(0, exceptionMessage);
-                                }
+                                device.Open(DeviceModes.None, 1000); // todo: 1sec timeout ok?
+                                device.Filter = filter;
+                                device.OnPacketArrival += new PacketArrivalEventHandler(Device_OnPacketArrival_pcap);
+                                device.StartCapture();
+                                pcap = device;
+                                foundAdapter = true;
+                                break;
                             }
+                            catch (Exception ex)
+                            {
+                                var exceptionMessage = "Exception while trying to listen to NIC " + device.Name + "\n" + ex.ToString();
+                                Console.WriteLine(exceptionMessage);
+                                AppendLog(0, exceptionMessage);
+                            }
+                            
                         }
                     }
                     catch (Exception ex)
